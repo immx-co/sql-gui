@@ -121,7 +121,7 @@ class App(tk.Tk):
         if not self.combo2.get():
             messagebox.showerror('Ошибка', 'Позиция не выбрана')
             return
-        sns.set_theme()
+        sns.set()
         sns.displot(df[self.combo2.get()])
         plt.show()
 
@@ -132,9 +132,10 @@ class App(tk.Tk):
 
     def search(self):
         self.local_df = df[df['Name'] == self.ent3.get()]
+        player = self.ent3.get()
         self.ent3.delete(0, tk.END)
         if not len(self.local_df):
-            messagebox.showinfo('Attention', 'Игрок не найден')
+            messagebox.showinfo('Attention', f'Игрок {player} не найден')
             return
         self.clear_database()
         for i in range(len(self.local_df)):
