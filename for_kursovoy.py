@@ -11,8 +11,9 @@ class App(tk.Tk):
     def __init__(self, base):
         # Инициализация окна
         self.df = base
+        self.value = []
         super().__init__()
-        self.title('Курсовой')
+        self.title('GUI DataBase')
         self.geometry(f'1920x520+0+0')
         self.resizable(False, False)
         self['bg'] = '#00FFB3'
@@ -28,13 +29,26 @@ class App(tk.Tk):
         # Инициализация виджетов
         self.scroll1 = tk.Scrollbar(self, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscroll=self.scroll1.set)
+
+        # Инициализация кнопок
         self.but1 = tk.Button(self, bg='#00FFEF', activebackground='#00FFEF', text='Удалить игрока',
                               font='TimesNewRoman 16', command=self.delete_element)
         self.but2 = tk.Button(self, bg='#00FFEF', activebackground='#00FFEF', text='Отсортировать',
                               font='TimesNewRoman 16', command=self.sorting)
-        self.combo1 = ttk.Combobox(self, width=13, font='TimeNewRoman 16',
-                                   values=['index', 'Age', 'Value', 'Wage', 'Crossing', 'Finishing'])
-        self.combo1.current(0)  # Задаем по умолчанию 0 индекс из списка value значений combo1
+        self.but3 = tk.Button(self, bg='#00FFEF', activebackground='#00FFEF', font='TimeNewRoman 16',
+                              text='Добавить игрока', command=self.add_member)
+        self.but4 = tk.Button(text='Выполнить sql запрос', activebackground='#00FFEF', bg='#00FFEF',
+                              font='TimeNewRoman 16', command=self.enter_sql, height=2)
+        self.but5 = tk.Button(self, text='Найти', activebackground='#00FFEF', bg='#00FFEF', command=self.search)
+        self.but6 = tk.Button(self, text='Вернуться', activebackground='#00FFEF', bg='#00FFEF', command=self.default)
+        self.but7 = tk.Button(self, text='Наглядное количественное\nотображение данных', activebackground='#00FFEF',
+                              bg='#00FFEF', font='TimesNewRoman 16', command=self.show_relation)
+        self.but8 = tk.Button(self, text='Первый элемент', activebackground='#00FFEF', bg='#00FFEF',
+                              font='TimesNewRoman 16',
+                              command=self.set_focus)
+        self.but9 = tk.Button(self, text='Последний элемент', activebackground='#00FFEF', bg='#00FFEF',
+                              font='TimesNewRoman 16', command=self.set_focus_last)
+
         self.more_many_var = tk.BooleanVar()
         self.rad1 = tk.Radiobutton(self, bg='#00FFB3', activebackground='#00FFB3', text='По возрастанию',
                                    font='TimesNewRoman 14',
@@ -45,9 +59,10 @@ class App(tk.Tk):
                                    font='TimesNewRoman 14',
                                    variable=self.more_many_var,
                                    value=False)
-        self.but3 = tk.Button(self, bg='#00FFEF', activebackground='#00FFEF', font='TimeNewRoman 16',
-                              text='Добавить игрока', command=self.add_member)
+
         self.ent1 = tk.Entry(self, font='TimesNewRoman 16')
+        self.ent3 = tk.Entry(self)
+
         self.menu = tk.Menu(self)
         self.config(menu=self.menu)
         self.file_menu = tk.Menu(self.menu, tearoff=0)
@@ -55,22 +70,16 @@ class App(tk.Tk):
         self.file_menu.add_separator()
         self.file_menu.add_command(label='Выйти', command=self.destroy_quit)
         self.menu.add_cascade(label='Меню', menu=self.file_menu)
-        self.ent2 = tk.Entry(self)
+
         self.text1 = tk.Text(self, width=20, height=7)
-        self.lab2 = tk.Label(text='Введите sql запрос', bg='#00FFB3', font='TimesNewRoman 14')
-        self.but4 = tk.Button(text='Выполнить sql запрос', activebackground='#00FFEF', bg='#00FFEF',
-                              font='TimeNewRoman 16', command=self.enter_sql, height=2)
-        self.ent3 = tk.Entry(self)
-        self.but5 = tk.Button(text='Найти', activebackground='#00FFEF', bg='#00FFEF', command=self.search)
-        self.but6 = tk.Button(text='Вернуться', activebackground='#00FFEF', bg='#00FFEF', command=self.default)
+        self.lab2 = tk.Label(self, text='Введите sql запрос', bg='#00FFB3', font='TimesNewRoman 14')
+
+        self.combo1 = ttk.Combobox(self, width=13, font='TimeNewRoman 16',
+                                   values=['index', 'Age', 'Value', 'Wage', 'Crossing', 'Finishing'])
+        self.combo1.current(0)  # Задаем по умолчанию 0 индекс из списка value значений combo1
         self.combo2 = ttk.Combobox(self, font='TimesNewRoman 16',
                                    values=['Age', 'Nationality', 'Club', 'Value', 'Wage', 'Crossing', 'Finishing'])
-        self.but7 = tk.Button(text='Наглядное количественное\nотображение данных', activebackground='#00FFEF',
-                              bg='#00FFEF', font='TimesNewRoman 16', command=self.show_relation)
-        self.but8 = tk.Button(text='Первый элемент', activebackground='#00FFEF', bg='#00FFEF', font='TimesNewRoman 16',
-                              command=self.set_focus)
-        self.but9 = tk.Button(text='Последний элемент', activebackground='#00FFEF', bg='#00FFEF',
-                              font='TimesNewRoman 16', command=self.set_focus_last)
+
 
         # Заполнение дерева элементами из базы данных sql
         for i in range(len(self.df)):
@@ -112,7 +121,7 @@ class App(tk.Tk):
         if not self.combo2.get():
             messagebox.showerror('Ошибка', 'Позиция не выбрана')
             return
-        sns.set()
+        sns.set_theme()
         sns.displot(df[self.combo2.get()])
         plt.show()
 
@@ -139,7 +148,7 @@ class App(tk.Tk):
                 try:
                     with sq.connect('database.db') as con:
                         print(pd.read_sql(self.text1.get(1.0, tk.END), con))
-                except BaseException:
+                except Exception:
                     messagebox.showerror('Ошибка', 'Неверный sql запрос')
 
     def destroy_quit(self):
@@ -179,19 +188,21 @@ class App(tk.Tk):
             self.tree.insert('', tk.END, values=list(self.df.iloc[i]))
 
     def delete_element(self):
-        try:
-            self.df.drop(self.value, inplace=True)  # удаляет выбранный в дереве элемент из датафрейма
-            self.clear_database()
-            for i in range(len(self.df)):
-                self.tree.insert('', tk.END, values=list(self.df.iloc[i]))
-        except (AttributeError, KeyError):
+        if not self.value:
             messagebox.showinfo('Attention', 'Выберите индекс для удаления!')
-            for i in range(len(self.df)):
-                self.tree.insert('', tk.END, values=list(self.df.iloc[i]))
+            return
+        self.df.drop(self.value, inplace=True)  # удаляет выбранный в дереве элемент из датафрейма
+        self.clear_database()
+        for i in range(len(self.df)):
+            self.tree.insert('', tk.END, values=list(self.df.iloc[i]))
+        self.value = []
 
     def select_value(self, event):
-        for i in self.tree.selection():
-            self.value = self.tree.item(i)['values'][0]
+        self.value = []
+        sel = self.tree.selection()
+        for i in sel:
+            if self.tree.item(i)['values'][0] not in self.value:
+                self.value.append(self.tree.item(i)['values'][0])
 
 
 with sq.connect('database.db') as con:
